@@ -8,3 +8,9 @@ So far:
 Time to complete are not competitive; more like half-hour per star, rather than the crazy fast 1-minute-per-star that board leaders are achieving. (Wow!)
 
 Have fun all.
+
+How do I run the source?
+========================
+
+* Haskell (```*.hs```) files can be compiled anywhere Haskell '98 is supported. Honestly, I have just been pasting into ```https://repl.it/lm/haskell``` online. (The GHC toolchain can be a bit bulky to set up locally for one-off use.) Every Haskell solution has a ```main``` function that prints the part 1 solution on the first line, and the part 2 solution on the second line.
+* SWI-Prolog (```*.pl``` - no not Perl) files can be consulted via ```swipl``` (https://www.swi-prolog.org/download/stable). There are two queries match the solutions for part 1 and part 2 of each program, named ```sol1(X)``` and ```sol2(X)```, respectively.
