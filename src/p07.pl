@@ -36,7 +36,7 @@ innerbag_count_style(Count-Style, Count, Style).
 
 % True when Style is a member of the given rule's InnerBags.
 member_inner_style(Style, _:InnerBags) :-
-    maplist(innerbag_style, InnerBags, _, InnerStyles),
+    maplist(innerbag_count_style, InnerBags, _, InnerStyles),
     member(Style, InnerStyles).
 
 % All Rules whose inner bags directly refer to the given Style.
@@ -68,14 +68,17 @@ outerstyle_rule(OuterStyle, OuterStyle:InnerBags) :-
     member(OuterStyle:InnerBags, R),
     !.
 
-rule_innerbags_total(_:[], 0).
+multiply(A, B, C) :- C is A * B.
+dot_product_list(A, B, C) :- maplist(multiply, A, B, C).
+
 rule_innerbags_total(_:InnerBags, Total) :-
     maplist(innerbag_count_style, InnerBags, InnerBagCounts, InnerBagStyles),
     maplist(outerstyle_rule, InnerBagStyles, Rules),
-    maplist(rule_innerbags_total, Rules, Subtotals),
-    sum_list(Subtotals, Total0),
-    sum_list(InnerBagCounts, SumInnerBagCounts),
-    Total is SumInnerBagCounts + Total0,
+    maplist(rule_innerbags_total, Rules, Subtotals0),
+    dot_product_list(InnerBagCounts, Subtotals0, Subtotals),
+    sum_list(InnerBagCounts, T1),
+    sum_list(Subtotals, T2),
+    Total is T1 + T2,
     !.
 
 sol2(N) :-
