@@ -1,4 +1,5 @@
 :- use_module(library(dcg/basics)).
+:- initialization load_db.
 
 inner_bag(Count-Style) -->
     integer(Count),
@@ -22,16 +23,20 @@ rule(OuterBag:InnerBags) -->
 rules([]) --> eos.
 rules([R|Rules]) --> rule(R), rules(Rules).
 
-db(R) :- phrase_from_file(rules(R), "p07.txt"), !.
+% Parse the input text once at initialisation.
+load_db :-
+    phrase_from_file(rules(R), "p07.txt"),
+    !,
+    assertz(db(R)).
 
 % parsing complete
 
-% Inner bag Style.
-innerbag_style(_-Style, Style).
+% Inner bag fields.
+innerbag_count_style(Count-Style, Count, Style).
 
 % True when Style is a member of the given rule's InnerBags.
 member_inner_style(Style, _:InnerBags) :-
-    maplist(innerbag_style, InnerBags, InnerStyles),
+    maplist(innerbag_style, InnerBags, _, InnerStyles),
     member(Style, InnerStyles).
 
 % All Rules whose inner bags directly refer to the given Style.
@@ -42,12 +47,10 @@ inner_style_rules(InnerStyle, Rules) :-
 % Outer bag style.
 rule_outer_style(OuterStyle:_, OuterStyle).
 
-% Fan out to discover all 
-% It's really slow :)
+% Fan out to discover all bags indirectly referring to InnerStyle.
 inner_style_rules_fanout(InnerStyle, Rules) :-
     inner_style_rules(InnerStyle, R0),
-    length(R0, N),
-    N >= 0,
+    R0 \== [],
     maplist(rule_outer_style, R0, S0),
     maplist(inner_style_rules_fanout, S0, ParentRules),
     flatten([R0|ParentRules], RulesDups),
@@ -55,8 +58,26 @@ inner_style_rules_fanout(InnerStyle, Rules) :-
     !.
 inner_style_rules_fanout(_, []).
 
-
 sol1(N) :-
     inner_style_rules_fanout('shiny gold', Rules),
     maplist(rule_outer_style, Rules, Styles),
     length(Styles, N).
+
+outerstyle_rule(OuterStyle, OuterStyle:InnerBags) :-
+    db(R),
+    member(OuterStyle:InnerBags, R),
+    !.
+
+rule_innerbags_total(_:[], 0).
+rule_innerbags_total(_:InnerBags, Total) :-
+    maplist(innerbag_count_style, InnerBags, InnerBagCounts, InnerBagStyles),
+    maplist(outerstyle_rule, InnerBagStyles, Rules),
+    maplist(rule_innerbags_total, Rules, Subtotals),
+    sum_list(Subtotals, Total0),
+    sum_list(InnerBagCounts, SumInnerBagCounts),
+    Total is SumInnerBagCounts + Total0,
+    !.
+
+sol2(N) :-
+    outerstyle_rule('shiny gold', R),
+    rule_innerbags_total(R, N).
