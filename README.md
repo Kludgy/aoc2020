@@ -13,4 +13,4 @@ How do I run the source?
 ========================
 
 * Haskell (```*.hs```) files can be compiled anywhere Haskell '98 is supported. Honestly, I have just been pasting into https://repl.it/lm/haskell online. (The GHC toolchain can be a bit bulky to set up locally for one-off use.) Every Haskell solution has a ```main``` function that prints the part 1 solution on the first line, and the part 2 solution on the second line.
-* SWI-Prolog (```*.pl``` - no not Perl) files can be consulted via ```swipl``` (https://www.swi-prolog.org/download/stable). There are two queries match the solutions for part 1 and part 2 of each problem, ```sol1/1``` and ```sol2/1```, respectively.
+* SWI-Prolog (```*.pl``` - no not Perl) files can be consulted via ```swipl``` (https://www.swi-prolog.org/download/stable). For every problem there are two queries matching part 1 and part 2, ```sol1/1``` and ```sol2/1```, respectively.
