@@ -23,22 +23,39 @@ pc_acc_op_val_step(Pc0, Acc0, acc, Val, Pc, Acc ) :- Pc is Pc0 + 1,    Acc is Ac
 pc_acc_op_val_step(Pc0, Acc0, jmp, Val, Pc, Acc0) :- Pc is Pc0 + Val.
 pc_acc_op_val_step(Pc0, Acc0, nop, _,   Pc, Acc0) :- Pc is Pc0 + 1.
 
-pc_acc_step(Pc0, Acc0, Pc, Acc) :-
-    prog(I),
-    nth0(Pc0, I, Op:Val),
+pc_acc_step(Prog, Pc0, Acc0, Pc, Acc) :-
+    nth0(Pc0, Prog, Op:Val),
     pc_acc_op_val_step(Pc0, Acc0, Op, Val, Pc, Acc).
 
 % Trace the program path until we revisit a pc value in our history.
 % The state of the accumulator just before revisiting a pc for the
 % first time is LastAcc
-trace_(Pc0, Acc0, History, History, Acc0) :-
+looptrace_(_, Pc0, Acc0, History, History, Acc0) :-
     member(Pc0:_, History).
-trace_(Pc0, Acc0, History, LastHistory, LastAcc) :-
+looptrace_(Prog, Pc0, Acc0, History, LastHistory, LastAcc) :-
     \+ member(Pc0:_, History),
-    pc_acc_step(Pc0, Acc0, Pc1, Acc1),
-    trace_(Pc1, Acc1, [Pc0:Acc0|History], LastHistory, LastAcc).
+    pc_acc_step(Prog, Pc0, Acc0, Pc1, Acc1),
+    looptrace_(Prog, Pc1, Acc1, [Pc0:Acc0|History], LastHistory, LastAcc).
 
-trace(History, Acc) :- trace_(0, 0, [], History, Acc), !.
+looptrace(Prog, History, Acc) :- looptrace_(Prog, 0, 0, [], History, Acc), !.
 
-sol1(N) :- trace(_, N).
+sol1(N) :- prog(I), !, looptrace(I, _, N).
 % sol1(N), N = 2080
+
+% termtrace_ is true for programs whose program counter finally leaves
+% the address domain.
+termtrace_(Prog, Pc0, Acc0, Acc0) :-
+    \+ pc_acc_step(Prog, Pc0, Acc0, _, FinalAcc).
+termtrace_(Prog, Pc0, Acc0, FinalAcc) :-
+    pc_acc_step(Prog, Pc0, Acc0, Pc1, Acc1),
+    termtrace_(Prog, Pc1, Acc1, FinalAcc).
+
+termtrace(Prog, Pc0, Acc0, FinalAcc) :-
+    \+ looptrace_(Prog, _, _),              % a terminating program mustn't loop
+    termtrace_(Prog, Pc0, Acc0, FinalAcc).  % unify the final accumulator value of the terminating program
+
+% The strategy for sol2/1 will be to back-track all unique programs replacing a jmp with nop,
+% testing each new program with termtrace until we get an answer.
+
+
+%sol2(N) :- N=0.
