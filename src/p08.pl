@@ -40,22 +40,25 @@ looptrace_(Prog, Pc0, Acc0, History, LastHistory, LastAcc) :-
 looptrace(Prog, History, Acc) :- looptrace_(Prog, 0, 0, [], History, Acc), !.
 
 sol1(N) :- prog(I), !, looptrace(I, _, N).
-% sol1(N), N = 2080
+% sol1(N), N = 2080.
 
 % termtrace_ is true for programs whose program counter finally leaves
 % the address domain.
 termtrace_(Prog, Pc0, Acc0, Acc0) :-
-    \+ pc_acc_step(Prog, Pc0, Acc0, _, FinalAcc).
+    \+ pc_acc_step(Prog, Pc0, Acc0, _, _).
 termtrace_(Prog, Pc0, Acc0, FinalAcc) :-
     pc_acc_step(Prog, Pc0, Acc0, Pc1, Acc1),
     termtrace_(Prog, Pc1, Acc1, FinalAcc).
 
-termtrace(Prog, Pc0, Acc0, FinalAcc) :-
-    \+ looptrace_(Prog, _, _),              % a terminating program mustn't loop
-    termtrace_(Prog, Pc0, Acc0, FinalAcc).  % unify the final accumulator value of the terminating program
+termtrace(Prog, FinalAcc) :-
+    \+ looptrace(Prog, _, _),         % a terminating program mustn't loop
+    termtrace_(Prog, 0, 0, FinalAcc).  % unify the final accumulator value of the terminating program
 
 % The strategy for sol2/1 will be to back-track all unique programs replacing a jmp with nop,
 % testing each new program with termtrace until we get an answer.
+noptrace(Prog, FinalAcc) :-
+    select(jmp:Val, Prog, nop:Val, NewProg), % select/4 backtracks on substitutions until Prog=NewProg, or it exhausts all combinations.
+    termtrace(NewProg, FinalAcc).
 
-
-%sol2(N) :- N=0.
+sol2(N) :- prog(I), !, noptrace(I, N).
+% sol2(N), N = 2477.
