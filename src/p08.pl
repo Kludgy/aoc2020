@@ -30,15 +30,15 @@ pc_acc_step(Pc0, Acc0, Pc, Acc) :-
 
 % Trace the program path until we revisit a pc value in our history.
 % The state of the accumulator just before revisiting a pc for the
-% first time is LastAcc.
-trace_(Pc0, _, History, LastAcc) :- member(Pc0:LastAcc, History).
-trace_(Pc0, Acc0, History, LastAcc) :-
+% first time is LastAcc
+trace_(Pc0, Acc0, History, History, Acc0) :-
+    member(Pc0:_, History).
+trace_(Pc0, Acc0, History, LastHistory, LastAcc) :-
     \+ member(Pc0:_, History),
     pc_acc_step(Pc0, Acc0, Pc1, Acc1),
-    trace_(Pc1, Acc1, [Pc0:Acc0|History], LastAcc).
+    trace_(Pc1, Acc1, [Pc0:Acc0|History], LastHistory, LastAcc).
 
-trace(LastAcc) :- trace_(0, 0, [], LastAcc).
+trace(History, Acc) :- trace_(0, 0, [], History, Acc), !.
 
-sol1(N) :- trace(N).
-% sol1(N), N = 118 is the solution I get but it is wrong.
-
+sol1(N) :- trace(_, N).
+% sol1(N), N = 2080
