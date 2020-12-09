@@ -2,8 +2,20 @@ main = do
     print sol1
     print sol2
 
-sol1 = undefined
+sol1 = head $ fmap (\(_, x) -> x) (testAllPrevN 25) -- answer is the first value that fails
 sol2 = undefined
+
+-- Strategy is to keep retesting, dropping one more from the input list each time.
+-- * This may not terminate depending on input (but we expect AoC to be sensible)
+-- * There will be a better way to reorder function applications so that we don't keep starting with the original input, but ignoring that
+testAllPrevN n
+    = filter (not testPrevN) -- defer to a function that will test the last 25 against our test element
+    $ fmap (\x -> (init xs, last xs)) -- split the first 25 and our test element
+    $ fmap (\i -> take (n+1) $ drop i input) [0..] -- on each pass, advance 1 and scan the next 25 + our test element
+
+-- Is test the sum of a unique pair of values in prevs?
+test :: [Integer] -> Integer -> Bool
+test prevs test = undefined
 
 input =
     [ 16
