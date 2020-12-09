@@ -1,21 +1,35 @@
+import Data.List
+
 main = do
     print sol1
     print sol2
 
-sol1 = head $ fmap (\(_, x) -> x) (testAllPrevN 25) -- answer is the first value that fails
-sol2 = undefined
+sol1 = head $ testAllPrevN 25 -- answer is the first value that fails
+sol2 = undefined :: Integer
 
 -- Strategy is to keep retesting, dropping one more from the input list each time.
 -- * This may not terminate depending on input (but we expect AoC to be sensible)
 -- * There will be a better way to reorder function applications so that we don't keep starting with the original input, but ignoring that
+testAllPrevN :: Int -> [Integer]
 testAllPrevN n
-    = filter (not testPrevN) -- defer to a function that will test the last 25 against our test element
-    $ fmap (\x -> (init xs, last xs)) -- split the first 25 and our test element
+    = fmap (\(_, x) -> x) -- and take only the value that failed (forget about the prev n lists)
+    $ filter test -- see if any unique pair adds to the test value
+    $ fmap (\xs -> (init xs, last xs)) -- split the first 25 and our test element
     $ fmap (\i -> take (n+1) $ drop i input) [0..] -- on each pass, advance 1 and scan the next 25 + our test element
 
--- Is test the sum of a unique pair of values in prevs?
-test :: [Integer] -> Integer -> Bool
-test prevs test = undefined
+-- Is x the sum of a unique pair of values in prevs?
+test :: ([Integer], Integer) -> Bool
+test (prevs, x) =
+    let
+        prevsNub = nub prevs -- make sure we don't have duplicate values! (this is sadly O(n^2))
+        uniquePairs = pairs prevsNub -- get unique pairs (ie. wrt to their positions in the list)
+    in
+        any (\(a,b) -> a+b == x) uniquePairs -- if we find at least one successful pair, we're good!
+
+-- take only unique pairs from xs
+pairs :: [a] -> [(a,a)]
+pairs xs = [(x,y) | (x:ys) <- tails xs, y <- ys]
+
 
 input =
     [ 16
