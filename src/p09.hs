@@ -2,20 +2,26 @@ import Data.List
 
 main = do
     print sol1 -- 2089807806
-    print sol2
+    print sol2 -- 245848639
 
 sol1 = head $ testAllPrevN 25 -- answer is the first value that fails
-sol2 = undefined :: Integer
+sol2 =
+    let
+        subseqs = concat . fmap tails . inits -- handy way to produce all (contiguous) sublists
+        sol1seq = head $ filter (\xs -> length xs >= 2 && sum xs == sol1) $ subseqs input -- search for the subsequence we want
+    in
+        minimum sol1seq + maximum sol1seq
 
 -- Strategy is to keep retesting, dropping one more from the input list each time.
 -- * This may not terminate depending on input (but we expect AoC to be sensible)
 -- * There will be a better way to reorder function applications so that we don't keep starting with the original input, but ignoring that
 testAllPrevN :: Int -> [Integer]
 testAllPrevN n
-    = fmap (\(_, x) -> x) -- and take only the value that failed (forget about the prev n lists)
-    $ filter (not . test) -- see if no unique pair adds to the test value
-    $ fmap (\xs -> (init xs, last xs)) -- split the first 25 and our test element
-    $ fmap (\i -> take (n+1) $ drop i input) [0..] -- on each pass, advance 1 and scan the next 25 + our test element
+    = fmap (\(_, x) -> x)               -- only keep the test value part (toss the sublist that failed)
+    $ filter (not . test)               -- only keep runs where no unique pair totals to the test value
+    $ fmap (\xs -> (init xs, last xs))  -- split the first n and our test element
+    $ fmap (take (n+1))                 -- limit to n + our test element
+    $ tails input                       -- advancing through input
 
 -- Is x the sum of a unique pair of values in prevs?
 test :: ([Integer], Integer) -> Bool
