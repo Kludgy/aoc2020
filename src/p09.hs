@@ -1,7 +1,7 @@
 import Data.List
 
 main = do
-    print sol1
+    print sol1 -- 2089807806
     print sol2
 
 sol1 = head $ testAllPrevN 25 -- answer is the first value that fails
@@ -13,7 +13,7 @@ sol2 = undefined :: Integer
 testAllPrevN :: Int -> [Integer]
 testAllPrevN n
     = fmap (\(_, x) -> x) -- and take only the value that failed (forget about the prev n lists)
-    $ filter test -- see if any unique pair adds to the test value
+    $ filter (not . test) -- see if no unique pair adds to the test value
     $ fmap (\xs -> (init xs, last xs)) -- split the first 25 and our test element
     $ fmap (\i -> take (n+1) $ drop i input) [0..] -- on each pass, advance 1 and scan the next 25 + our test element
 
