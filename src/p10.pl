@@ -56,3 +56,16 @@ sol1(N) :-
     prod_list(V, N),
     !.
 % sol1(N), N=2368.
+
+% Part 2 is going to require an enumeration of gaps placed in the path.
+% One strategy is to focus on the problem of what it means to remove one
+% element, then two elements, etc. until we get to a number of elements
+% that exceeds the number that can be removed.
+%
+% This still sounds like it will be far too many.
+%
+% It is given that we cannot remove the first or last element of P in
+% path(P).
+%
+% We also know that we cannot remove any element whose neighbours'
+% fused gaps would exceed 3.
