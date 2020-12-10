@@ -37,21 +37,22 @@ diffs([L|List], Diffs) :-
 
 value_length(K-Values, K-Len) :- length(Values, Len).
 
-frequencies(List, Freqs) :-
-    msort(List, List1),
+freqs(List, Freqs) :-
+    msort(List, List1),                     % msort/2 is like sort/2 except is doesn't eliminate duplicates
     pairs_keys_values(Pairs0, List1, _),
-    group_pairs_by_key(Pairs0, Pairs1),
-    maplist(value_length, Pairs1, Freqs).
+    group_pairs_by_key(Pairs0, Pairs1),     % cheap way to get groups of the same digits partitioned
+    maplist(value_length, Pairs1, Freqs).   % and count the number of elements in each group
 
-% plan([], Input, _) :-
-%     % Must satisfy the device
-%     device_joltage(A),
-%     Amin is Input + 1, A >= Amin,
-%     Amax is Input + 3, A =< Amax.
-%
-% plan(AdapterSet, Input, Path) :-
-%     member(A, Adapters),
-%     Amin is Input + 1, A >= Amin,
-%     Amax is Input + 3, A =< Amax,
-%     ord_del_element(AdapterSet, A, FewerAdapters),
-%     plan(FewerAdapters, A, [Input|Path]).
+prod_list([N], N).
+prod_list([X|Xs], N) :-
+    prod_list(Xs, N0),
+    N is X * N0.
+
+sol1(N) :-
+    path(P),
+    diffs(P, D),
+    freqs(D, F),
+    pairs_values(F, V),
+    prod_list(V, N),
+    !.
+% sol1(N), N=2368.
