@@ -69,3 +69,17 @@ sol1(N) :-
 %
 % We also know that we cannot remove any element whose neighbours'
 % fused gaps would exceed 3.
+%
+% While I don't have any immediate intuition for how the number of
+% valid permutations changes as a worst-case contiguous list grows
+% (though it has to be under 2^(n-2)), maybe we can segment out disjoint
+% sublists that are small enough to brute force? *crosses fingers*
+
+permutes([], 0).
+permutes([_], 0).
+permutes([_,_], 0).
+permutes([Pl,P,Pr|Path], Total) :-
+    Pdiff is Pr - Pl,
+    Pdiff =< 3,
+    permutes([P,Pr|Path], Total0),
+    Total is Total0 + 1.
