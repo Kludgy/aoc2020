@@ -42,12 +42,9 @@ stepMemDecoder (ProgState mask memory) (SetMem addr val) = ProgState mask $ Map.
 memDecoderAddrs :: String -> Int -> [Int]
 memDecoderAddrs mask addr0 = fmap readbin $ crossCombo $ zipWith applyAddrMaskBit mask (leftpad (length mask) '0' $ showbin addr0)
 
--- There is probably a standard Haskell function for doing this already,
--- but crossPermute is my hand rolled solution to the problem of creating 
--- a set of combinations at every non-singular element (for the memory floating
--- memory combos in part 2.)
+-- Join all sublists of choice combos that are possible at every element.
 --
--- For example:
+-- Example:
 --
 -- crossCombo ["0","1","01","1","1","01","1"]
 -- = ["0101101"
@@ -55,15 +52,8 @@ memDecoderAddrs mask addr0 = fmap readbin $ crossCombo $ zipWith applyAddrMaskBi
 --   ,"0111101"
 --   ,"0111111"]
 --
--- Want to achieve evaluation similar to this:
---
--- cc ["1"] = ["1"]
---
--- cc ["01","1"] 
---     = concat [(fmap ('0':) $ cc ["1"]), (fmap ('1':) $ cc ["1"])]
---     = concat [(fmap ('0':) ["1"]), (fmap ('1':) ["1"])]
---     = concat [["01"],["11"]]
---     = ["01", "11"]
+-- This is the implementation of Data.List.Tools.mulLists in the yjtools package:
+-- https://hackage.haskell.org/package/yjtools-0.9.18/docs/src/Data-List-Tools.html#mulLists
 --
 crossCombo :: [[a]] -> [[a]]
 crossCombo [] = [[]]
