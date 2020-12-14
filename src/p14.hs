@@ -13,7 +13,7 @@ main :: IO ()
 main = do
     s <- readStatements
     print $ sol1 s -- 15514035145260
-    print $ sol2 s -- ?
+    print $ sol2 s -- 3926790061594
 
 sol1 :: [Stmt] -> Int
 sol1 statements = Map.foldr (+) 0 mem
@@ -66,16 +66,15 @@ memDecoderAddrs mask addr0 = fmap readbin $ crossCombo $ zipWith applyAddrMaskBi
 --     = ["01", "11"]
 --
 crossCombo :: [[a]] -> [[a]]
-crossCombo [] = []
-crossCombo [xs] = fmap (:[]) xs
-crossCombo (xs:xss) = let cp = crossCombo xss in concat $ fmap (\x -> fmap (x:) cp) xs
+crossCombo [] = [[]]
+crossCombo (xs:xss) = [x:ys | x <- xs, ys <- crossCombo xss]
 
 applyAddrMaskBit :: Char -> Char -> [Char]
 applyAddrMaskBit '0' x = [x]
 applyAddrMaskBit '1' _ = ['1']
 applyAddrMaskBit _ _ = ['0','1']
 
-data ProgState = ProgState String Memory deriving (Show, Eq)
+data ProgState = ProgState !String !Memory deriving (Show, Eq)
 type Memory = Map.Map Int Int
 
 applyMask :: (Integral a, Show a) => String -> a -> a
@@ -126,6 +125,6 @@ mem = do
     pure $ SetMem addr val
 
 data Stmt
-    = SetMask String
-    | SetMem Int Int
+    = SetMask !String
+    | SetMem !Int !Int
     deriving (Eq, Show)
