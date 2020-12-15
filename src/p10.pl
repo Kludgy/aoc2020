@@ -6,7 +6,8 @@ adapters([X|Xs]) --> blanks, integer(X), blanks, adapters(Xs).
 :- initialization load_db.
 
 load_db :-
-    phrase_from_file(adapters(A), "p10.txt"),
+%    phrase_from_file(adapters(A), "p10.txt"),
+    phrase_from_file(adapters(A), "c:\\Users\\Darren\\Work\\aoc2020\\src\\p10.txt"),
     !,
     assertz(db(A)).
 
@@ -57,29 +58,62 @@ sol1(N) :-
     !.
 % sol1(N), N=2368.
 
-% Part 2 is going to require an enumeration of gaps placed in the path.
-% One strategy is to focus on the problem of what it means to remove one
-% element, then two elements, etc. until we get to a number of elements
-% that exceeds the number that can be removed.
+% Part 2 Solution Discussion
+% --------------------------
 %
-% This still sounds like it will be far too many.
+% I ended up solving part 2 by hand first because it was actually quicker than writing the code by
+% the time I'd figured out what was happening.
 %
-% It is given that we cannot remove the first or last element of P in
-% path(P).
+% If we look at any supplied sequence for this entire day's problems we notice there are never any
+% differences of 2. All steps are either of 1 or 3. This makes the solution much easier to find, as
+% we will see below.
 %
-% We also know that we cannot remove any element whose neighbours'
-% fused gaps would exceed 3.
+% Further, if we take a look at any example, or the problem input, runs with steps of 1 are always
+% very small (only 2, 3, 4, or 5 of which there are then only 0, 1, 2 or 3 elements that can possibly
+% be removed in the runs). This is small enough that we can write out the combinations:
 %
-% While I don't have any immediate intuition for how the number of
-% valid permutations changes as a worst-case contiguous list grows
-% (though it has to be under 2^(n-2)), maybe we can segment out disjoint
-% sublists that are small enough to brute force? *crosses fingers*
+%   (0),(1)        X can't remove any here
+%   (0),1,(2)      <-- 2 permutations, because we can remove nothing or 1.
+%   (0),1,2,(3)    <-- 4 permutations, because we can either remove nothing, 1, 2 or both.
+%   (0),1,2,3,(4)  <-- 7 permutations, because only 7 of 8 combos are valid (removing 1&2&3 would leave a gap >3)
+%
+% So, taking all such runs and multiplying the permutations together gives the requested solution,
+%
+%   7*4*7*2*7*4*7*2*4*2*4*4*2*2*4*4*7*7*7*4 = 1727094849536
+%
+% Doing the first example from part 2:
+%
+%   0,1,4,5,6,7,10,11,12,15,16,19,22
+%
+% Start by marking all the numbers that could possibly be removed:
+%
+%   0,1,4,5,6,7,10,11,12,15,16,19,22
+%         x x       x
+%          4   *    2   =   8
+%    1 3 1 1 1 3  1  1  3  1  3  3
 
-permutes([], 0).
-permutes([_], 0).
-permutes([_,_], 0).
-permutes([Pl,P,Pr|Path], Total) :-
-    Pdiff is Pr - Pl,
-    Pdiff =< 3,
-    permutes([P,Pr|Path], Total0),
-    Total is Total0 + 1.
+
+sol2(N) :- N is 7*4*7* 2*7*4* 7*2*4* 2*4*4* 2*2*4* 4*7*7* 7*4.
+% sol2(N), N = 1727094849536.
+
+
+% diffrun_perms(DiffRunLen, NumPermutations).
+%
+% The correspondence between lengths of *1-difference-runs* of length DiffRunLen
+% and the number of valid permutations we can get by removing elements these
+% runs correspond to.
+%
+% Ex.
+%
+%  Original sequence:  1,4,5,6,7,10,12,15
+%  The only 1-run in the sequence:  4,5,6,7
+%  The only 1-difference-run:  (5-4),(6-5),(7-6) = 1,1,1.
+%
+% This 1-difference-run as a length of 3, so the corresponding
+% permutation count P is given by diffrun(3,P).
+%
+diffrun_perms(0, 0).
+diffrun_perms(1, 0).
+diffrun_perms(2, 2).
+diffrun_perms(3, 4).
+diffrun_perms(4, 7).
